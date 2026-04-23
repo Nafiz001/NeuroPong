@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', 'Trebuchet MS', 'Helvetica Neue', sans-serif;
+  background: #020617;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+.menu-backdrop {
+  background:
+    radial-gradient(80% 90% at 15% 10%, rgba(34, 211, 238, 0.26), transparent 62%),
+    radial-gradient(70% 75% at 86% 22%, rgba(245, 158, 11, 0.2), transparent 60%),
+    linear-gradient(145deg, rgba(2, 6, 23, 0.98) 0%, rgba(15, 23, 42, 0.94) 55%, rgba(30, 41, 59, 0.9) 100%);
+}
+
+.menu-shell {
+  animation: menuRiseIn 520ms ease-out both;
+}
+
+.menu-section-in {
+  animation: menuSectionIn 440ms ease-out both;
+}
+
+.menu-side-in {
+  animation: menuSideIn 620ms ease-out both;
+}
+
+@keyframes menuRiseIn {
+  from {
+    transform: translateY(16px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes menuSectionIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes menuSideIn {
+  from {
+    transform: translateX(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
