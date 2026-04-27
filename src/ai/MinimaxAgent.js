@@ -1,7 +1,7 @@
 // ============================================================================
 // MINIMAX AGENT  —  owner: Nafiz
 // ----------------------------------------------------------------------------
-
+// Depth-limited minimax with alpha-beta pruning over the discrete paddle
 // action space {UP, DOWN, STAY}. The "self" player maximises, the opponent
 // minimises. Future ball positions come from simulateBall() — the same
 // physics function the live game uses, which is why the rollout is faithful.
@@ -13,7 +13,7 @@
 //
 // Evaluation features (see evaluate()):
 //   * Distance to ball                  — be where the ball will be
-//   * Scoring chance                    — angled returns toward gaps
+
 //   * Paddle alignment                  — center bias, recovery readiness
 //   * Energy usage                      — don't waste on no-threat states
 //   * Risk of missing                   — penalize being far from impact
