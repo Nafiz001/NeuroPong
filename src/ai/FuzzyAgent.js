@@ -12,6 +12,7 @@
 //      discretize back to {UP, STAY, DOWN}.
 //
 // See FUZZY_RULES below for the human-readable rule table.
+// Dewan note: keep the control loop readable before tuning any thresholds.
 // ============================================================================
 
 import { ACTION, BALL, ENERGY, PADDLE, POWERUP, SIDE } from '../game/constants.js';
