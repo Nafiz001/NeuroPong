@@ -115,6 +115,7 @@ export function createFuzzyAgent() {
       // ---- Y axis: fast proportional tracking of predicted ball height ---
       const dyDelta = targetY - myY;
       const ySlow = 0.12;
+      // Slightly conservative Y motion keeps the paddle from overshooting on fast exchanges.
       const dy = clamp(dyDelta / ySlow, -1, 1);
 
       // ---- X axis: lunge only AFTER the ball has legally bounced on our

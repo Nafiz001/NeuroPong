@@ -1,6 +1,7 @@
 export default function FuzzyRuleStrip({ rules = [] }) {
   if (!rules.length) return null;
 
+  // Compact, text-first output keeps the fuzzy decisions easy to scan in-match.
   return (
     <div className="space-y-1 text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400">
       <div className="text-slate-500">Fuzzy rules</div>
