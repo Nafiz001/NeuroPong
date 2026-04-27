@@ -25,7 +25,7 @@ import { simulateBall, predictZAtX, predictAtX } from '../game/physics.js';
 const ACTIONS = [ACTION.UP, ACTION.STAY, ACTION.DOWN];
 
 // Tunables.
-const SEARCH_DEPTH = 3;
+const SEARCH_DEPTH = 4;
 const PLY_PHYSICS_STEPS = 6;        // each ply = ~0.1s of simulated game
 const PLY_DT = 1 / 60;              // matches SIM.fixedDtMs
 
@@ -53,11 +53,11 @@ export function createMinimaxAgent({ depth = SEARCH_DEPTH } = {}) {
       const effectiveDepth = urgency > 0.72 ? depth : Math.max(2, depth - 1);
       const heading = self === SIDE.LEFT ? obs.ball.vx < 0 : obs.ball.vx > 0;
 
-      // Speed-scaled aim bias so matches complete. Faster balls are harder
-      // to track perfectly.
-      if (Math.random() < 0.3) {
-        const speedFactor = Math.min(1.6, Math.hypot(obs.ball.vx, obs.ball.vz) / BALL.startSpeed);
-        trackingBias = randomRange(-0.35, 0.35) * speedFactor * (1 - urgency * 0.4);
+      // Speed-scaled aim bias so matches complete. Smaller than Fuzzy's bias —
+      // the search isn't there to absorb noise, so we keep tracking tighter.
+      if (Math.random() < 0.18) {
+        const speedFactor = Math.min(1.4, Math.hypot(obs.ball.vx, obs.ball.vz) / BALL.startSpeed);
+        trackingBias = randomRange(-0.22, 0.22) * speedFactor * (1 - urgency * 0.5);
       }
 
       // 1) Pick best paddle action via minimax.
@@ -66,28 +66,38 @@ export function createMinimaxAgent({ depth = SEARCH_DEPTH } = {}) {
       let bestScore  = -Infinity;
       let alpha = -Infinity;
       const beta  =  Infinity;
+      const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
+      const debugChildren = [];
 
       for (const a of ACTIONS) {
         const child = applyAction(root, self, opp, a, ACTION.STAY);
         const s = minimax(child, effectiveDepth - 1, alpha, beta, false, self, opp);
+        debugChildren.push({ action: a, value: s });
         if (s > bestScore) { bestScore = s; bestAction = a; }
         alpha = Math.max(alpha, s);
       }
+      const elapsedMs = typeof performance !== 'undefined' ? performance.now() - t0 : 0;
 
       // Predict at paddle's current x so tracking matches the impact point.
+      // When ball is going away, recover toward center — the next return won't
+      // arrive at wherever the ball happens to be on the opponent's side.
       const pred = heading ? predictAtX(obs.ball, myX) : null;
-      const predictedZ = pred ? pred.z + trackingBias : predictZAtX(obs.ball, myX) + trackingBias;
+      const predictedZ = pred ? pred.z + trackingBias : -p.z * 0.2;
       const canSmash = pred && pred.y > 1.8;
       const predictedY = pred
         ? clamp(canSmash ? pred.y - 0.3 : pred.y, PADDLE.yMin, PADDLE.yMax)
         : PADDLE.homeY;
 
       const alignDelta = predictedZ - p.z;
-      // Tight proportional Z control.
+      // Proportional Z control blended with the search recommendation. The
+      // search picks a direction over ~0.4s of lookahead; we use it as an
+      // intensity boost on top of the proportional term, mirroring how Fuzzy
+      // blends its rule output. Without this blend the search was decorative.
       const zSlow = 0.18;
       let dz = clamp(alignDelta / zSlow, -1, 1);
-      if (Math.abs(alignDelta) < 0.03 && bestAction !== ACTION.STAY) {
-        dz = bestAction * 0.2;
+      const searchInformative = heading && Math.abs(alignDelta) > 0.05;
+      if (searchInformative && bestAction !== ACTION.STAY) {
+        dz = clamp(dz * 0.8 + bestAction * 0.4, -1, 1);
       }
       actionHoldTicks = 0;
       lastAction = Math.sign(dz);
@@ -113,7 +123,20 @@ export function createMinimaxAgent({ depth = SEARCH_DEPTH } = {}) {
       // 2) Pick a power-up by simple expected-utility rule.
       const powerup = pickPowerup(obs, self, myX, urgency);
 
-      return { action: { dz, dy, dx }, powerup };
+      // 3) Optional introspection payload for the telemetry panel. Kept cheap.
+      const debug = {
+        kind: 'minimax',
+        depth: effectiveDepth,
+        rootValue: bestScore,
+        bestAction,
+        rootChildren: debugChildren,
+        elapsedMs,
+        predictedZ,
+        predictedY,
+        urgency
+      };
+
+      return { action: { dz, dy, dx }, powerup, debug };
     }
   };
 }
