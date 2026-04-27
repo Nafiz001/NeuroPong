@@ -14,7 +14,7 @@
 
 import { ACTION, BALL, ENERGY, MATCH, PADDLE, POWERUP, SIDE, SIM } from './constants.js';
 import { simulateBall, stepBall } from './physics.js';
-import { state, resetForServe, publishHud } from './store.js';
+import { state, resetForServe, publishHud, pushEvent } from './store.js';
 import {
   activate, ballSpeedMultiplier, canUse, regenEnergy,
   tickTimers, tryAbsorbWithShield
@@ -90,6 +90,11 @@ function applyDecision(side, decision) {
   if (!decision) return;
   if (state.rally.serveStage === 0 && decision.powerup && canUse(state, side, decision.powerup)) {
     activate(state, side, decision.powerup);
+    pushEvent('powerup', { side, kind: decision.powerup });
+  }
+  if (decision.debug !== undefined) {
+    // Freeze once to prevent UI mutation leaking into agent memory next turn.
+    state.lastDebug[side] = decision.debug ? Object.freeze(decision.debug) : null;
   }
   lastDecision[side] = {
     action: normalizeAction(decision.action),
@@ -219,6 +224,7 @@ function handleBallEvent(ev) {
 
 function handleNetTouch() {
   state.rally.netTouches++;
+  pushEvent('net', { ballVx: state.ball.vx, ballVz: state.ball.vz });
   // Official TT: serve net touch with otherwise valid path is a let (re-serve).
   if (state.rally.serveStage > 0) {
     resetForServe(state.server);
@@ -226,6 +232,8 @@ function handleNetTouch() {
 }
 
 function handleTableBounce(side) {
+  pushEvent('bounce', { side, ballSpeed: Math.hypot(state.ball.vx, state.ball.vy, state.ball.vz) });
+
   const server = state.server;
   const receiver = opposite(server);
 
@@ -273,6 +281,15 @@ function handlePaddleHit(side) {
   state.rally.lastHitter = side;
   state.rally.expectedBounceSide = opposite(side);
   state.rally.bounceCount = 0;
+
+  const ballSpeed = Math.hypot(state.ball.vx, state.ball.vy, state.ball.vz);
+  const smash = state.ball.vy < -5 && state.ball.y > 1.7;
+  pushEvent('hit', {
+    side,
+    ballSpeed,
+    smash,
+    rallyHits: state.rally.hits
+  });
 }
 
 function handleSideOut(side) {
@@ -306,6 +323,7 @@ function handleEndMiss(side) {
 function handleMiss(losingSide) {
   if (tryAbsorbWithShield(state, losingSide)) {
     // Shield absorbs the miss. No stats update, no point, quick reset.
+    pushEvent('shieldAbsorb', { side: losingSide });
     resetForServe(nextServer(state.server));
     return;
   }
@@ -316,6 +334,18 @@ function handleMiss(losingSide) {
   state.rally.pendingLoser = losingSide;
   state.rally.pendingMs = SIM.pointPendingMs;
   state.status = 'pointPending';
+
+  const winner = opposite(losingSide);
+  const nextScore = state.score[winner] + 1;
+  const isMatchPoint = nextScore + 1 >= MATCH.winScore && nextScore < MATCH.winScore;
+  const isMatchWon   = nextScore >= MATCH.winScore;
+  pushEvent('miss', {
+    loser: losingSide,
+    winner,
+    rallyHits: state.rally.hits,
+    isMatchPoint,
+    isMatchWon
+  });
 }
 
 function resolvePoint() {
@@ -330,11 +360,17 @@ function resolvePoint() {
 
   const winner = losingSide === SIDE.LEFT ? SIDE.RIGHT : SIDE.LEFT;
   state.score[winner]++;
+  pushEvent('score', { winner, scoreL: state.score[SIDE.LEFT], scoreR: state.score[SIDE.RIGHT] });
 
   if (state.score[winner] >= MATCH.winScore) {
     state.matchOver = true;
     state.winner = winner;
     state.status = 'paused';
+    pushEvent('matchWon', {
+      winner,
+      scoreL: state.score[SIDE.LEFT],
+      scoreR: state.score[SIDE.RIGHT]
+    });
     return;
   }
 

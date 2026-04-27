@@ -60,8 +60,44 @@ export const state = {
   countdown: 0,
   serveTo: SIDE.RIGHT,     // retained for HUD/debug compatibility
   tick: 0,
-  simTimeMs: 0
+  simTimeMs: 0,
+  // Render-side event queue. The loop appends presentation events here
+  // (paddle hits, bounces, score, match point) and the render-side driver
+  // drains them each frame. Producing events must not affect physics —
+  // this buffer is write-only from the sim's perspective.
+  events: [],
+  // Optional debug payload from each agent's last decision. Frozen before
+  // storage so UI code can't accidentally feed it back into the sim.
+  lastDebug: { [SIDE.LEFT]: null, [SIDE.RIGHT]: null }
 };
+
+let eventSeq = 0;
+
+// Append an event for render-side consumers (audio, commentary, VFX).
+// The event objects are read-only from the sim's POV — the sim should
+// never read back from state.events.
+export function pushEvent(type, payload = null) {
+  state.events.push({
+    id: ++eventSeq,
+    t: state.simTimeMs,
+    type,
+    payload
+  });
+  // Cap buffer — if a consumer stalls we don't want unbounded growth.
+  if (state.events.length > 256) {
+    state.events.splice(0, state.events.length - 256);
+  }
+}
+
+// Drain consumed events. Render-side drivers call this every frame.
+export function drainEvents() {
+  if (state.events.length === 0) return EMPTY_EVENTS;
+  const out = state.events;
+  state.events = [];
+  return out;
+}
+
+const EMPTY_EVENTS = Object.freeze([]);
 
 function freshAgentMetrics() {
   return {
@@ -253,6 +289,7 @@ export const useHud = create(() => ({
   energyL: ENERGY.start, energyR: ENERGY.start,
   status: 'paused',
   rallyHits: 0,
+  server: SIDE.LEFT,
   cooldownsL: { boost: 0, shield: 0, slow: 0 },
   cooldownsR: { boost: 0, shield: 0, slow: 0 },
   activeL:    { boost: 0, shield: 0, slow: 0 },
@@ -260,7 +297,9 @@ export const useHud = create(() => ({
   matchOver: false,
   winner: null,
   metricsL: freshAgentMetrics(),
-  metricsR: freshAgentMetrics()
+  metricsR: freshAgentMetrics(),
+  debugL: null,
+  debugR: null
 }));
 
 // Push a snapshot from `state` into the React HUD store. Called ~10x/sec.
@@ -272,6 +311,7 @@ export function publishHud() {
     energyR: state.energy[SIDE.RIGHT],
     status: state.status,
     rallyHits: state.rally.hits,
+    server: state.server,
     cooldownsL: { ...state.cooldowns[SIDE.LEFT] },
     cooldownsR: { ...state.cooldowns[SIDE.RIGHT] },
     activeL:    { ...state.active[SIDE.LEFT] },
@@ -279,7 +319,9 @@ export function publishHud() {
     matchOver: state.matchOver,
     winner: state.winner,
     metricsL: { ...state.metrics[SIDE.LEFT] },
-    metricsR: { ...state.metrics[SIDE.RIGHT] }
+    metricsR: { ...state.metrics[SIDE.RIGHT] },
+    debugL: state.lastDebug[SIDE.LEFT],
+    debugR: state.lastDebug[SIDE.RIGHT]
   });
 }
 

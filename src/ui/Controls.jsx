@@ -1,8 +1,8 @@
-// Floating bottom-bar: pause, reset, swap sides. Useful during the comparative
-// study so you can flip which AI plays from which end and re-run.
+// Broadcast-styled floating controls. Sits above the lower-third so the
+// score banner stays unobstructed.
 
-import { resetMatch } from '../game/store.js';
-import { state } from '../game/store.js';
+import { resetMatch, state } from '../game/store.js';
+import AudioToggle from './AudioToggle.jsx';
 
 export default function Controls({ onSwap, onMenu }) {
   function togglePause() {
@@ -11,24 +11,25 @@ export default function Controls({ onSwap, onMenu }) {
   function reset() {
     resetMatch();
   }
+
   return (
-    <div className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-      <button onClick={togglePause}
-        className="px-3 py-1.5 text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 rounded">
-        Pause / Resume
-      </button>
-      <button onClick={reset}
-        className="px-3 py-1.5 text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 rounded">
-        Reset Match
-      </button>
-      <button onClick={onSwap}
-        className="px-3 py-1.5 text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 rounded">
-        Swap AIs
-      </button>
-      <button onClick={onMenu}
-        className="px-3 py-1.5 text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 rounded">
-        Main Menu
-      </button>
+    <div className="pointer-events-auto absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-2">
+      <ControlBtn onClick={togglePause} label="Pause / Resume" />
+      <ControlBtn onClick={reset}        label="Reset" />
+      <ControlBtn onClick={onSwap}       label="Swap Agents" />
+      <AudioToggle />
+      <ControlBtn onClick={onMenu}       label="Main Menu" />
     </div>
+  );
+}
+
+function ControlBtn({ onClick, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-slate-200 bg-bg-1/85 hover:bg-bg-2/95 border border-white/10 rounded transition"
+    >
+      {label}
+    </button>
   );
 }

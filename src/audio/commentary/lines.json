@@ -1,0 +1,45 @@
+{
+  "match_point_left": [
+    { "text": "Match point, Voltari. The storm is about to break.", "audio": null },
+    { "text": "Voltari's on the brink — one play from the title.",    "audio": null },
+    { "text": "Calculated storms — Voltari eyes match point.",        "audio": null }
+  ],
+  "match_point_right": [
+    { "text": "Match point, Ember Lynx. Instinct's about to burn.",    "audio": null },
+    { "text": "Ember Lynx one rally away from a championship moment.", "audio": null },
+    { "text": "The flame closes in — match point for Ember Lynx.",     "audio": null }
+  ],
+  "win_left": [
+    { "text": "Voltari takes the match! Pure calculation on centre stage.", "audio": null },
+    { "text": "Game over — Voltari's algorithm wins the day.",              "audio": null }
+  ],
+  "win_right": [
+    { "text": "Ember Lynx wins! Instinct over calculation tonight.",   "audio": null },
+    { "text": "The flame holds — Ember Lynx closes it out.",          "audio": null }
+  ],
+  "long_rally_short": [
+    { "text": "Five-hit rally — both agents settling in.", "audio": null },
+    { "text": "They're trading blows evenly here.",        "audio": null }
+  ],
+  "long_rally_mid": [
+    { "text": "Ten hits and climbing — this is a slugfest.", "audio": null },
+    { "text": "Neither side giving an inch.",                "audio": null }
+  ],
+  "long_rally_long": [
+    { "text": "Fifteen-hit epic — incredible sustain.", "audio": null },
+    { "text": "They just won't end this rally.",        "audio": null }
+  ],
+  "clutch_shield": [
+    { "text": "Shield absorbs it at the last moment!", "audio": null },
+    { "text": "Saved by the energy field.",            "audio": null }
+  ],
+  "nice_smash": [
+    { "text": "Tremendous smash, ball slammed home.", "audio": null },
+    { "text": "Power play — ball drives down hard.",  "audio": null }
+  ],
+  "point_scored": [
+    { "text": "Point on the board.",                   "audio": null },
+    { "text": "Clean winner.",                         "audio": null },
+    { "text": "Scoreboard moves.",                     "audio": null }
+  ]
+}
