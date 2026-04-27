@@ -12,6 +12,7 @@
 //      discretize back to {UP, STAY, DOWN}.
 //
 // See FUZZY_RULES below for the human-readable rule table.
+// Dewan note: keep the control loop readable before tuning any thresholds.
 // ============================================================================
 
 import { ACTION, BALL, ENERGY, PADDLE, POWERUP, SIDE } from '../game/constants.js';
@@ -74,6 +75,7 @@ export function createFuzzyAgent() {
       // ---- Rule evaluation: outputs are paddle-intensity buckets ---------
       // Output linguistic vars: STRONG_NEG, NEG, ZERO, POS, STRONG_POS
       // mapped to crisp centers: -1.0, -0.5, 0, +0.5, +1.0
+      // The rule table stays small on purpose so the controller remains legible.
       const out = { sNeg: 0, neg: 0, zero: 0, pos: 0, sPos: 0 };
 
       const dir = alignDelta >= 0 ? 'pos' : 'neg';
@@ -97,6 +99,8 @@ export function createFuzzyAgent() {
       out[sDir] = max(out[sDir], min(eng.low, align.bad, headingT(heading)));
 
       // ---- Defuzzification (centroid) ------------------------------------
+      // Aggregation stays weighted-average based so rule strengths blend smoothly.
+      // Final intensity is still bounded before it reaches the paddle driver.
       const num = out.sNeg * -1.0 + out.neg * -0.5 + out.zero * 0 + out.pos * 0.5 + out.sPos * 1.0;
       const den = out.sNeg + out.neg + out.zero + out.pos + out.sPos;
       const intensity = den > 0 ? num / den : 0;
@@ -111,6 +115,7 @@ export function createFuzzyAgent() {
       // ---- Y axis: fast proportional tracking of predicted ball height ---
       const dyDelta = targetY - myY;
       const ySlow = 0.12;
+      // Slightly conservative Y motion keeps the paddle from overshooting on fast exchanges.
       const dy = clamp(dyDelta / ySlow, -1, 1);
 
       // ---- X axis: lunge only AFTER the ball has legally bounced on our
@@ -168,6 +173,7 @@ const max = Math.max;
 
 function fuzzifyDistance(d) {
   // d is in world units along X axis; arena width ~20.
+  // Distance bands stay wide enough to avoid jitter on short rallies.
   return {
     near:   trapL(d, 2, 6),
     medium: tri(d, 4, 8, 12),
@@ -175,6 +181,7 @@ function fuzzifyDistance(d) {
   };
 }
 function fuzzifySpeed(s) {
+  // Fast balls should lean toward aggressive tracking rather than hard turns.
   return {
     slow: trapL(s, BALL.startSpeed * 0.8, BALL.startSpeed * 1.3),
     fast: trapR(s, BALL.startSpeed * 1.1, BALL.startSpeed * 1.6)
@@ -188,6 +195,7 @@ function fuzzifyAlignment(absDelta) {
   };
 }
 function fuzzifyEnergy(e) {
+  // Energy state should stay broad so low-resource behavior still looks smooth.
   return {
     low:    trapL(e, 20, 40),
     medium: tri(e, 30, 55, 80),
@@ -195,6 +203,7 @@ function fuzzifyEnergy(e) {
   };
 }
 function fuzzifyDanger(d) {
+  // Danger only spikes when several weak signals line up at once.
   return {
     low:  trapL(d, 0.3, 0.6),
     high: trapR(d, 0.5, 0.85)
