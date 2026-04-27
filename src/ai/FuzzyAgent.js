@@ -99,6 +99,7 @@ export function createFuzzyAgent() {
       out[sDir] = max(out[sDir], min(eng.low, align.bad, headingT(heading)));
 
       // ---- Defuzzification (centroid) ------------------------------------
+      // Aggregation stays weighted-average based so rule strengths blend smoothly.
       const num = out.sNeg * -1.0 + out.neg * -0.5 + out.zero * 0 + out.pos * 0.5 + out.sPos * 1.0;
       const den = out.sNeg + out.neg + out.zero + out.pos + out.sPos;
       const intensity = den > 0 ? num / den : 0;
