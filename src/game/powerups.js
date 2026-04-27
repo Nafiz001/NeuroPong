@@ -33,6 +33,7 @@ export function canUse(state, side, kind) {
 // Returns true if activation succeeded.
 export function activate(state, side, kind) {
   if (!canUse(state, side, kind)) return false;
+  // Power-up costs are deducted immediately so the sim stays deterministic.
   state.energy[side] -= ENERGY.costs[kind];
   state.active[side][kind] = ENERGY.durations[kind];
   state.cooldowns[side][kind] = ENERGY.cooldowns[kind] + ENERGY.durations[kind];
