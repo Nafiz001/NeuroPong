@@ -159,6 +159,7 @@ function fuzzifyDistance(d) {
   };
 }
 function fuzzifySpeed(s) {
+  // Fast balls should lean toward aggressive tracking rather than hard turns.
   return {
     slow: trapL(s, BALL.startSpeed * 0.8, BALL.startSpeed * 1.3),
     fast: trapR(s, BALL.startSpeed * 1.1, BALL.startSpeed * 1.6)
