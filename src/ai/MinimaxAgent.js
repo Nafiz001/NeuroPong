@@ -1,7 +1,7 @@
 // ============================================================================
 // MINIMAX AGENT  —  owner: Nafiz
 // ----------------------------------------------------------------------------
-// Depth-limited minimax with alpha-beta pruning over the discrete paddle
+
 // action space {UP, DOWN, STAY}. The "self" player maximises, the opponent
 // minimises. Future ball positions come from simulateBall() — the same
 // physics function the live game uses, which is why the rollout is faithful.
