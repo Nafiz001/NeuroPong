@@ -130,7 +130,25 @@ export function createFuzzyAgent() {
       // ---- Power-up selection (also fuzzy-rule driven) -------------------
       const powerup = pickPowerupFuzzy({ obs, self, dist, speed, align, eng, dang, heading, urgency });
 
-      return { action: { dz, dy, dx }, powerup };
+      // ---- Optional introspection for the telemetry panel -----------------
+      const debug = {
+        kind: 'fuzzy',
+        inputs: {
+          distX: distToBallX,
+          ballSpeed,
+          alignDelta,
+          energy,
+          danger,
+          urgency,
+          heading
+        },
+        memberships: { dist, speed, align, eng: { low: eng.low, medium: eng.medium, high: eng.high }, dang },
+        outputs: { ...out },
+        crisp: intensity,
+        discrete: Math.sign(dz)
+      };
+
+      return { action: { dz, dy, dx }, powerup, debug };
     }
   };
 }

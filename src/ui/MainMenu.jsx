@@ -1,15 +1,24 @@
+// Broadcast-grade main menu. Wordmark, match setup, faction cards, stats
+// widget, settings and controls overview.
+
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import NeuroPongWordmark from '../branding/logos/NeuroPongWordmark.jsx';
+import FactionMark from '../branding/logos/FactionMark.jsx';
+import { VOLTARI, EMBERLYNX } from '../branding/palette.js';
+import StatsCard from './menu/StatsCard.jsx';
+import AudioToggle from './AudioToggle.jsx';
 
 const CAMERA_CHOICES = [
-  { value: 'classic', label: 'Classic' },
+  { value: 'classic',   label: 'Classic' },
   { value: 'broadcast', label: 'Broadcast' },
-  { value: 'topdown', label: 'Top Down' }
+  { value: 'topdown',   label: 'Top Down' }
 ];
 
 const SPEED_CHOICES = [
-  { value: 0.8, label: '0.8x' },
-  { value: 1.0, label: '1.0x' },
-  { value: 1.2, label: '1.2x' }
+  { value: 0.8, label: '0.8×' },
+  { value: 1.0, label: '1.0×' },
+  { value: 1.2, label: '1.2×' }
 ];
 
 const UI_SCALE_CHOICES = [
@@ -19,8 +28,10 @@ const UI_SCALE_CHOICES = [
 ];
 
 export default function MainMenu({
-  leftName,
-  rightName,
+  leftAgentId,
+  rightAgentId,
+  leftAgentName,
+  rightAgentName,
   swapped,
   onSwap,
   onPlay,
@@ -36,151 +47,147 @@ export default function MainMenu({
     <div className="pointer-events-auto absolute inset-0 z-30 flex items-center justify-center p-4 md:p-8">
       <div className="absolute inset-0 menu-backdrop" />
 
-      <div className="relative w-full max-w-5xl grid gap-4 lg:grid-cols-[1.35fr_0.9fr] menu-shell">
-        <section className="rounded-2xl border border-cyan-200/30 bg-slate-950/70 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-cyan-500/10">
-          <div className="text-cyan-200 text-xs tracking-[0.26em] uppercase font-semibold">
-            NeuroPong Arena
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0,  scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="relative w-full max-w-6xl grid gap-4 lg:grid-cols-[1.4fr_1fr]"
+      >
+        <div className="absolute top-3 right-3 z-10">
+          <AudioToggle />
+        </div>
+        {/* Main column */}
+        <section className="arena-glass rounded-2xl p-7 md:p-9 relative overflow-hidden">
+          <div className="absolute -top-8 -left-8 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25), transparent 70%)' }} />
+
+          <NeuroPongWordmark className="max-w-sm" />
+
+          <div className="mt-5 text-slate-300 text-sm md:text-base max-w-xl leading-relaxed">
+            A broadcast-grade AI exhibition. Two faction agents — <span className="text-voltari-300 font-semibold">Voltari</span> and <span className="text-emberlynx-300 font-semibold">Ember Lynx</span> — share the same observation feed and decide at 30&nbsp;Hz. First to {winScore} takes the match.
           </div>
-          <h1 className="mt-3 text-4xl md:text-5xl font-black leading-tight text-slate-50">
-            Neural Match Lobby
-          </h1>
-          <p className="mt-4 text-slate-200 max-w-2xl text-sm md:text-base leading-relaxed">
-            Two AI brains enter the arena: Minimax vs Fuzzy Logic. Launch a fresh match,
-            review the rules, and choose who starts from each side.
-          </p>
 
           {view === 'main' && (
-            <div className="mt-8 grid gap-3 sm:max-w-sm menu-section-in">
+            <div className="mt-7 grid gap-3 sm:max-w-sm menu-section-in">
               {canResume && (
-                <button
-                  onClick={onResume}
-                  className="px-5 py-3 rounded-xl text-sm font-bold tracking-wide text-slate-900 bg-emerald-300 hover:bg-emerald-200 transition-colors"
-                >
-                  Resume Match
-                </button>
+                <MenuButton primary onClick={onResume}>Resume Match</MenuButton>
               )}
-              <button
-                onClick={onPlay}
-                className="px-5 py-3 rounded-xl text-sm font-bold tracking-wide text-slate-900 bg-cyan-300 hover:bg-cyan-200 transition-colors"
-              >
-                {canResume ? 'Start New Match' : 'Play Game'}
-              </button>
-              <button
-                onClick={() => setView('rules')}
-                className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-50 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-500/60 transition-colors"
-              >
-                Rules
-              </button>
-              <button
-                onClick={() => setView('settings')}
-                className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-50 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-500/60 transition-colors"
-              >
-                Settings
-              </button>
-              <button
-                onClick={onSwap}
-                className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-50 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-500/60 transition-colors"
-              >
-                Swap AI Sides
-              </button>
+              <MenuButton primary onClick={onPlay}>
+                {canResume ? 'Start New Match' : 'Play Match'}
+              </MenuButton>
+              <MenuButton onClick={() => setView('rules')}>Rules</MenuButton>
+              <MenuButton onClick={() => setView('settings')}>Settings</MenuButton>
+              <MenuButton onClick={onSwap}>Swap Agents Between Factions</MenuButton>
             </div>
           )}
 
           {view === 'rules' && (
-            <div className="mt-8 rounded-xl border border-slate-500/50 bg-slate-900/65 p-4 md:p-5 menu-section-in">
-              <h2 className="text-lg font-bold text-slate-50">Rules</h2>
-              <ul className="mt-3 space-y-2 text-sm text-slate-200 leading-relaxed">
-                <li>1. First to {winScore} points wins the match pace race.</li>
-                <li>2. Ball speed increases after each paddle hit.</li>
-                <li>3. Each side regenerates energy over time and can spend it on powerups.</li>
-                <li>4. Boost increases paddle speed, Shield blocks one scoring miss, Slow reduces ball displacement.</li>
-                <li>5. Both agents act with the same observation schema for fair comparison.</li>
-              </ul>
-              <button
-                onClick={() => setView('main')}
-                className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold text-slate-900 bg-cyan-300 hover:bg-cyan-200 transition-colors"
-              >
-                Back to Menu
-              </button>
-            </div>
+            <RulesPanel winScore={winScore} onBack={() => setView('main')} />
           )}
 
           {view === 'settings' && (
-            <div className="mt-8 rounded-xl border border-slate-500/50 bg-slate-900/65 p-4 md:p-5 menu-section-in">
-              <h2 className="text-lg font-bold text-slate-50">Settings</h2>
-
-              <SettingRow label="Camera Angle">
-                {CAMERA_CHOICES.map(choice => (
-                  <ChoiceButton
-                    key={choice.value}
-                    active={settings.camera === choice.value}
-                    onClick={() => onSettingsChange({ camera: choice.value })}
-                    label={choice.label}
-                  />
-                ))}
-              </SettingRow>
-
-              <SettingRow label="Game Speed">
-                {SPEED_CHOICES.map(choice => (
-                  <ChoiceButton
-                    key={choice.value}
-                    active={settings.gameSpeed === choice.value}
-                    onClick={() => onSettingsChange({ gameSpeed: choice.value })}
-                    label={choice.label}
-                  />
-                ))}
-              </SettingRow>
-
-              <SettingRow label="UI Scale">
-                {UI_SCALE_CHOICES.map(choice => (
-                  <ChoiceButton
-                    key={choice.value}
-                    active={settings.uiScale === choice.value}
-                    onClick={() => onSettingsChange({ uiScale: choice.value })}
-                    label={choice.label}
-                  />
-                ))}
-              </SettingRow>
-
-              <button
-                onClick={() => setView('main')}
-                className="mt-5 px-4 py-2 rounded-lg text-sm font-semibold text-slate-900 bg-cyan-300 hover:bg-cyan-200 transition-colors"
-              >
-                Back to Menu
-              </button>
-            </div>
+            <SettingsPanel
+              settings={settings}
+              onChange={onSettingsChange}
+              onBack={() => setView('main')}
+            />
           )}
         </section>
 
-        <aside className="rounded-2xl border border-amber-200/25 bg-slate-900/75 backdrop-blur-xl p-6 md:p-7 shadow-xl shadow-amber-500/10 menu-side-in">
-          <h3 className="text-xs uppercase tracking-[0.2em] font-semibold text-amber-200">Match Setup</h3>
-
-          <div className="mt-4 space-y-3 text-sm text-slate-100">
-            <div className="rounded-xl border border-purple-300/25 bg-purple-950/35 p-3">
-              <div className="text-[11px] uppercase tracking-wider text-purple-200/90">Left Side</div>
-              <div className="mt-1 font-semibold">{leftName}</div>
+        {/* Side column */}
+        <aside className="grid gap-4 content-start menu-side-in">
+          <div className="arena-glass rounded-2xl p-5">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-brand-accent font-semibold">Match Card</div>
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 mt-3 items-center">
+              <FactionBlock faction={VOLTARI} agentName={leftAgentName} />
+              <div className="font-display text-slate-500 text-xl">vs</div>
+              <FactionBlock faction={EMBERLYNX} agentName={rightAgentName} align="right" />
             </div>
-            <div className="rounded-xl border border-orange-300/25 bg-orange-950/30 p-3">
-              <div className="text-[11px] uppercase tracking-wider text-orange-200/90">Right Side</div>
-              <div className="mt-1 font-semibold">{rightName}</div>
+            <div className="mt-4 text-[11px] text-slate-400">
+              Orientation: <span className="text-slate-200 font-semibold">{swapped ? 'Swapped' : 'Default'}</span>. Swap before or during a match.
             </div>
           </div>
 
-          <div className="mt-5 rounded-xl border border-slate-500/40 bg-slate-950/50 p-3 text-xs text-slate-200 leading-relaxed">
-            Current orientation: {swapped ? 'swapped' : 'default'}. You can swap before starting or during a match.
-          </div>
+          <StatsCard leftAgentId={leftAgentId} rightAgentId={rightAgentId} />
 
-          <div className="mt-5">
-            <h4 className="text-xs uppercase tracking-[0.18em] text-cyan-200 font-semibold">In-Game Controls</h4>
-            <div className="mt-2 grid gap-2 text-xs text-slate-200">
-              <div className="rounded-lg bg-slate-800/70 p-2 border border-slate-600/50">Pause / Resume</div>
-              <div className="rounded-lg bg-slate-800/70 p-2 border border-slate-600/50">Reset Match</div>
-              <div className="rounded-lg bg-slate-800/70 p-2 border border-slate-600/50">Swap AIs</div>
-              <div className="rounded-lg bg-slate-800/70 p-2 border border-slate-600/50">Main Menu</div>
+          <div className="arena-glass rounded-2xl p-5">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-brand-accent font-semibold">In-Game Controls</div>
+            <div className="grid gap-2 mt-3 text-xs text-slate-200">
+              <ControlRow label="Pause / Resume"     kbd="space" />
+              <ControlRow label="Reset Match"        kbd="" />
+              <ControlRow label="Swap Agents"        kbd="" />
+              <ControlRow label="AI Telemetry"       kbd="Alt+T" />
+              <ControlRow label="Mute Audio"         kbd="" />
+              <ControlRow label="Main Menu"          kbd="" />
             </div>
           </div>
         </aside>
-      </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function MenuButton({ children, onClick, primary = false }) {
+  const cls = primary
+    ? 'bg-brand-accent text-bg-0 hover:bg-amber-200 font-black'
+    : 'bg-white/5 text-slate-100 border border-white/10 hover:bg-white/10 font-semibold';
+  return (
+    <button
+      onClick={onClick}
+      className={`px-5 py-3 rounded-xl text-sm tracking-wide ${cls} transition`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function RulesPanel({ winScore, onBack }) {
+  return (
+    <div className="mt-7 rounded-xl border border-white/10 bg-bg-1/55 p-5 menu-section-in">
+      <h2 className="font-display text-xl font-bold text-white">How a Match Plays</h2>
+      <ul className="mt-3 space-y-2 text-sm text-slate-200 leading-relaxed">
+        <li>1. First to <span className="text-brand-accent font-semibold">{winScore} points</span> wins.</li>
+        <li>2. Ball speed rises <span className="font-mono text-voltari-300">×1.025</span> after every paddle hit.</li>
+        <li>3. Energy regens at <span className="font-mono text-emberlynx-300">5/s</span> and is spent on power-ups.</li>
+        <li>4. Boost = paddle speed. Shield = absorbs one miss. Slow = ball displacement × 0.55.</li>
+        <li>5. Both agents see the same observation. Decisions land at 30&nbsp;Hz.</li>
+      </ul>
+      <button
+        onClick={onBack}
+        className="mt-5 px-4 py-2 rounded-lg text-xs font-bold tracking-wide uppercase text-bg-0 bg-brand-accent hover:bg-amber-200 transition"
+      >
+        Back
+      </button>
+    </div>
+  );
+}
+
+function SettingsPanel({ settings, onChange, onBack }) {
+  return (
+    <div className="mt-7 rounded-xl border border-white/10 bg-bg-1/55 p-5 menu-section-in">
+      <h2 className="font-display text-xl font-bold text-white">Settings</h2>
+
+      <SettingRow label="Camera Angle">
+        {CAMERA_CHOICES.map(c => (
+          <Choice key={c.value} active={settings.camera === c.value} onClick={() => onChange({ camera: c.value })} label={c.label} />
+        ))}
+      </SettingRow>
+      <SettingRow label="Game Speed">
+        {SPEED_CHOICES.map(c => (
+          <Choice key={c.value} active={settings.gameSpeed === c.value} onClick={() => onChange({ gameSpeed: c.value })} label={c.label} />
+        ))}
+      </SettingRow>
+      <SettingRow label="UI Scale">
+        {UI_SCALE_CHOICES.map(c => (
+          <Choice key={c.value} active={settings.uiScale === c.value} onClick={() => onChange({ uiScale: c.value })} label={c.label} />
+        ))}
+      </SettingRow>
+
+      <button
+        onClick={onBack}
+        className="mt-5 px-4 py-2 rounded-lg text-xs font-bold tracking-wide uppercase text-bg-0 bg-brand-accent hover:bg-amber-200 transition"
+      >
+        Back
+      </button>
     </div>
   );
 }
@@ -188,24 +195,54 @@ export default function MainMenu({
 function SettingRow({ label, children }) {
   return (
     <div className="mt-4">
-      <div className="text-xs uppercase tracking-[0.16em] text-cyan-200 font-semibold">{label}</div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {children}
+      <div className="text-[10px] uppercase tracking-[0.18em] text-brand-accent font-semibold">{label}</div>
+      <div className="mt-2 flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
+function Choice({ active, onClick, label }) {
+  const cls = active
+    ? 'bg-brand-accent text-bg-0 border-brand-accent'
+    : 'bg-white/5 text-slate-100 border-white/10 hover:bg-white/10';
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold tracking-wider uppercase border ${cls} transition`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function FactionBlock({ faction, agentName, align = 'left' }) {
+  const textAlign = align === 'right' ? 'text-right' : 'text-left';
+  return (
+    <div className={`flex ${align === 'right' ? 'flex-row-reverse' : ''} items-center gap-3`}>
+      <FactionMark faction={faction} size={54} />
+      <div className={textAlign}>
+        <div
+          className="font-display font-black tracking-wider text-lg"
+          style={{ color: faction.c300 }}
+        >
+          {faction.name}
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+          {agentName}
+        </div>
+        <div className="text-[10px] italic text-slate-500 mt-0.5">
+          {faction.tagline}
+        </div>
       </div>
     </div>
   );
 }
 
-function ChoiceButton({ active, onClick, label }) {
-  const cls = active
-    ? 'bg-cyan-300 text-slate-900 border-cyan-200'
-    : 'bg-slate-800/80 text-slate-100 border-slate-500/60 hover:bg-slate-700/90';
+function ControlRow({ label, kbd }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${cls}`}
-    >
-      {label}
-    </button>
+    <div className="flex items-center justify-between rounded-lg bg-bg-1/65 px-3 py-2 border border-white/5">
+      <span>{label}</span>
+      {kbd && <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-bg-0 border border-white/10 text-slate-300">{kbd}</kbd>}
+    </div>
   );
 }

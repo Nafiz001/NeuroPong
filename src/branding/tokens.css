@@ -1,0 +1,53 @@
+/* NeuroPong Arena — brand tokens.
+   Single source of truth for colors, spacing, typography. The JS side reads
+   the same values from palette.js for Three.js materials / shader uniforms. */
+
+:root {
+  /* Brand */
+  --brand-primary:   #8B5CF6;
+  --brand-secondary: #0EA5E9;
+  --brand-accent:    #FBBF24;
+
+  /* Voltari (left / Minimax) */
+  --voltari-600: #6D28D9;
+  --voltari-500: #7C3AED;
+  --voltari-400: #A855F7;
+  --voltari-300: #C084FC;
+  --voltari-200: #DDD6FE;
+  --voltari-glow: rgba(124, 58, 237, 0.55);
+
+  /* Ember Lynx (right / Fuzzy) */
+  --emberlynx-600: #C2410C;
+  --emberlynx-500: #F97316;
+  --emberlynx-400: #FB923C;
+  --emberlynx-300: #FDBA74;
+  --emberlynx-200: #FFEDD5;
+  --emberlynx-glow: rgba(249, 115, 22, 0.55);
+
+  /* Surfaces */
+  --bg-0: #05070D;
+  --bg-1: #0B0F1A;
+  --bg-2: #11172A;
+  --bg-surface: rgba(11, 15, 26, 0.78);
+  --stroke-1: rgba(255, 255, 255, 0.08);
+  --stroke-2: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --text-hi: #F8FAFC;
+  --text-md: #CBD5E1;
+  --text-lo: #64748B;
+
+  /* Semantic */
+  --semantic-success: #10B981;
+  --semantic-warn:    #F59E0B;
+  --semantic-danger:  #EF4444;
+  --semantic-info:    #22D3EE;
+
+  /* Type */
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter Variable', 'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Motion */
+  --ease-broadcast: cubic-bezier(0.22, 1, 0.36, 1);
+}
