@@ -75,6 +75,7 @@ export function createFuzzyAgent() {
       // ---- Rule evaluation: outputs are paddle-intensity buckets ---------
       // Output linguistic vars: STRONG_NEG, NEG, ZERO, POS, STRONG_POS
       // mapped to crisp centers: -1.0, -0.5, 0, +0.5, +1.0
+      // The rule table stays small on purpose so the controller remains legible.
       const out = { sNeg: 0, neg: 0, zero: 0, pos: 0, sPos: 0 };
 
       const dir = alignDelta >= 0 ? 'pos' : 'neg';
