@@ -151,6 +151,7 @@ const max = Math.max;
 
 function fuzzifyDistance(d) {
   // d is in world units along X axis; arena width ~20.
+  // Distance bands stay wide enough to avoid jitter on short rallies.
   return {
     near:   trapL(d, 2, 6),
     medium: tri(d, 4, 8, 12),
