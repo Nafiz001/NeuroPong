@@ -173,6 +173,7 @@ function fuzzifyAlignment(absDelta) {
   };
 }
 function fuzzifyEnergy(e) {
+  // Energy state should stay broad so low-resource behavior still looks smooth.
   return {
     low:    trapL(e, 20, 40),
     medium: tri(e, 30, 55, 80),
@@ -180,6 +181,7 @@ function fuzzifyEnergy(e) {
   };
 }
 function fuzzifyDanger(d) {
+  // Danger only spikes when several weak signals line up at once.
   return {
     low:  trapL(d, 0.3, 0.6),
     high: trapR(d, 0.5, 0.85)
