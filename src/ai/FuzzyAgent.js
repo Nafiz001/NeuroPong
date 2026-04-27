@@ -100,6 +100,7 @@ export function createFuzzyAgent() {
 
       // ---- Defuzzification (centroid) ------------------------------------
       // Aggregation stays weighted-average based so rule strengths blend smoothly.
+      // Final intensity is still bounded before it reaches the paddle driver.
       const num = out.sNeg * -1.0 + out.neg * -0.5 + out.zero * 0 + out.pos * 0.5 + out.sPos * 1.0;
       const den = out.sNeg + out.neg + out.zero + out.pos + out.sPos;
       const intensity = den > 0 ? num / den : 0;
