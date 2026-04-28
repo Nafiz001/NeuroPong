@@ -53,11 +53,11 @@ export function createMinimaxAgent({ depth = SEARCH_DEPTH } = {}) {
       const effectiveDepth = urgency > 0.72 ? depth : Math.max(2, depth - 1);
       const heading = self === SIDE.LEFT ? obs.ball.vx < 0 : obs.ball.vx > 0;
 
-      // Speed-scaled aim bias so matches complete. Smaller than Fuzzy's bias —
-      // the search isn't there to absorb noise, so we keep tracking tighter.
-      if (Math.random() < 0.18) {
+      // Aggressive aim variation — produces angled, hard-to-read returns
+      // off the round blade. Search keeps tracking honest on the receive.
+      if (Math.random() < 0.28) {
         const speedFactor = Math.min(1.4, Math.hypot(obs.ball.vx, obs.ball.vz) / BALL.startSpeed);
-        trackingBias = randomRange(-0.22, 0.22) * speedFactor * (1 - urgency * 0.5);
+        trackingBias = randomRange(-0.35, 0.35) * speedFactor * (1 - urgency * 0.4);
       }
 
       // 1) Pick best paddle action via minimax.
@@ -97,7 +97,7 @@ export function createMinimaxAgent({ depth = SEARCH_DEPTH } = {}) {
       let dz = clamp(alignDelta / zSlow, -1, 1);
       const searchInformative = heading && Math.abs(alignDelta) > 0.05;
       if (searchInformative && bestAction !== ACTION.STAY) {
-        dz = clamp(dz * 0.8 + bestAction * 0.4, -1, 1);
+        dz = clamp(dz * 0.85 + bestAction * 0.2, -1, 1);
       }
       actionHoldTicks = 0;
       lastAction = Math.sign(dz);
@@ -297,15 +297,15 @@ function pickPowerup(obs, self, myX, urgency) {
     return POWERUP.SHIELD;
   }
 
-  // BOOST: catchable but only if I move faster.
+  // BOOST: preemptive reach so the paddle accelerates before impact.
   if (
     energy >= ENERGY.costs.boost &&
     obs.cooldowns[self].boost === 0 &&
     obs.active[self].boost === 0 &&
-    distToImpact > PADDLE.depth * 0.42 &&
-    distToImpact < PADDLE.depth * 0.9 &&
-    ballToMyX < 5.5 &&
-    urgency > 0.55
+    distToImpact > PADDLE.depth * 0.36 &&
+    distToImpact < PADDLE.depth * 0.92 &&
+    ballToMyX < 6.0 &&
+    urgency > 0.50
   ) {
     return POWERUP.BOOST;
   }
@@ -323,6 +323,20 @@ function pickPowerup(obs, self, myX, urgency) {
   }
 
   return null;
+}
+
+function softArgmax(children) {
+  // Map {UP, STAY, DOWN} child values to a continuous [-1,1] direction. Higher
+  // value = more attractive direction. Softmax-weighted average of action ids.
+  let maxV = -Infinity;
+  for (const c of children) if (c.value > maxV) maxV = c.value;
+  let num = 0, den = 0;
+  for (const c of children) {
+    const w = Math.exp((c.value - maxV) / 400); // 400 ≈ eval scale
+    num += w * c.action;
+    den += w;
+  }
+  return den > 0 ? num / den : 0;
 }
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }

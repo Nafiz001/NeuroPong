@@ -13,11 +13,12 @@ export default function LowerThirdScore({
   status
 }) {
   return (
+    <div className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2">
     <motion.div
       initial={{ y: 32, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 broadcast-slab rounded-xl px-6 py-3 flex items-center gap-5 min-w-[420px]"
+      className="broadcast-slab rounded-xl px-6 py-3 flex items-center gap-5 min-w-[420px]"
     >
       <div className="flex items-center gap-2">
         <FactionMark faction={leftFaction} size={34} />
@@ -42,5 +43,6 @@ export default function LowerThirdScore({
         <FactionMark faction={rightFaction} size={34} />
       </div>
     </motion.div>
+    </div>
   );
 }

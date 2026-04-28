@@ -41,9 +41,9 @@ export function createFuzzyAgent() {
       const ballSpeed = Math.hypot(ball.vx, ball.vz);
       // Speed-scaled aim bias so matches complete. Faster balls are harder
       // to track perfectly — a realistic fatigue model.
-      if (Math.random() < 0.3) {
-        const speedFactor = Math.min(1.6, ballSpeed / BALL.startSpeed);
-        trackingBias = randomRange(-0.38, 0.38) * speedFactor;
+      if (Math.random() < 0.20) {
+        const speedFactor = Math.min(1.3, ballSpeed / BALL.startSpeed);
+        trackingBias = randomRange(-0.24, 0.24) * speedFactor;
       }
 
       // 3D target prediction at the paddle's CURRENT x — tracks the actual
